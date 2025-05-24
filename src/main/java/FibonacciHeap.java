@@ -155,7 +155,7 @@ public class FibonacciHeap {
     }
 
 
-    public void cascadingCut(Node node) {
+    private void cascadingCut(Node node) {
         Node parent = node.getParent();
         if (parent != null) {
             if (!node.isMark()) {
