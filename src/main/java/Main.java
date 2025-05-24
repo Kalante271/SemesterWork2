@@ -40,7 +40,6 @@ public class Main {
                 FibonacciHeap heap = new FibonacciHeap();
                 List<Node> nodes = new ArrayList<>();
 
-                // Тест вставки
                 long startTime = System.nanoTime();
                 for (int i = 0; i < size; i++) {
                     DeliveryOrder order = new DeliveryOrder(
@@ -52,7 +51,6 @@ public class Main {
                 }
                 totalInsertTime += System.nanoTime() - startTime;
 
-                // Тест извлечения минимума (только 25% элементов)
                 startTime = System.nanoTime();
                 int extractCount = size / 4;
                 for (int i = 0; i < extractCount; i++) {
@@ -62,7 +60,6 @@ public class Main {
                 }
                 totalExtractMinTime += System.nanoTime() - startTime;
 
-                // Тест уменьшения ключа (для 50% оставшихся элементов)
                 startTime = System.nanoTime();
                 int decreaseCount = Math.min(size / 2, nodes.size());
                 for (int i = 0; i < decreaseCount; i++) {
@@ -70,9 +67,7 @@ public class Main {
                     if (node != null && !heap.isEmpty()) {
                         try {
                             heap.decreaseKey(node, node.getKey() - 100);
-                        } catch (IllegalArgumentException | NullPointerException e) {
-                            // Пропускаем проблемные узлы
-                        }
+                        } catch (IllegalArgumentException | NullPointerException e) {}
                     }
                 }
                 totalDecreaseKeyTime += System.nanoTime() - startTime;
