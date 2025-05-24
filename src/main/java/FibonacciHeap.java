@@ -114,24 +114,20 @@ public class FibonacciHeap {
         if (newKey.compareTo(node.getKey()) > 0) {
             throw new IllegalArgumentException("New key must be smaller than current key!");
         }
-
         node.setKey(newKey);
         Node parent = node.getParent();
 
-        // Если свойство кучи нарушено
         if (parent != null && node.getKey().compareTo(parent.getKey()) < 0) {
             cut(node, parent);
             cascadingCut(parent);
         }
 
-        // Обновляем минимум
         if (node.getKey().compareTo(min.getKey()) < 0) {
             min = node;
         }
     }
 
     private void cut(Node node, Node parent) {
-        // Удаляем из списка детей родителя
         if (node.getLeft() == node) {
             parent.setChild(null);
         } else {
@@ -141,10 +137,8 @@ public class FibonacciHeap {
                 parent.setChild(node.getLeft());
             }
         }
-
         parent.setDegree(parent.getDegree() - 1);
 
-        // Добавляем в корневой список
         if (min != null) {
             node.setLeft(min);
             node.setRight(min.getRight());
