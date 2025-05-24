@@ -86,7 +86,7 @@ public class Main {
             ));
         }
 
-        try (FileWriter writer = new FileWriter("fibonacci_heap_results.csv")) {
+        try (FileWriter writer = new FileWriter("heap_results.csv")) {
             for (String line : results) {
                 writer.write(line + "\n");
             }
