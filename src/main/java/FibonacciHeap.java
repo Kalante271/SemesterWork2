@@ -145,11 +145,12 @@ public class FibonacciHeap {
         parent.setDegree(parent.getDegree() - 1);
 
         // Добавляем в корневой список
-        node.setLeft(min);
-        node.setRight(min.getRight());
-        min.getRight().setLeft(node);
-        min.setRight(node);
-
+        if (min != null) {
+            node.setLeft(min);
+            node.setRight(min.getRight());
+            min.getRight().setLeft(node);
+            min.setRight(node);
+        }
         node.setParent(null);
         node.setMark(false);
     }
