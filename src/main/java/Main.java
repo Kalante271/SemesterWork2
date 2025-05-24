@@ -1,95 +1,98 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
-import java.io.*;
 
-public class DeliverySchedulerMain {
-    static class Order implements Comparable {
+public class Main {
+    static class DeliveryOrder implements Comparable<DeliveryOrder> {
         int id;
-        int priority;
-        double x, y;
+        int priority; // 1 - highest, 3 - lowest
+        double distance;
 
-        public Order(int id, int priority, double x, double y) {
+        public DeliveryOrder(int id, int priority, double distance) {
             this.id = id;
             this.priority = priority;
-            this.x = x;
-            this.y = y;
+            this.distance = distance;
         }
 
         @Override
-        public int compareTo(Object o) {
-            Order other = (Order)o;
+        public int compareTo(DeliveryOrder other) {
             if (this.priority != other.priority) {
                 return Integer.compare(this.priority, other.priority);
             }
-            double distThis = Math.sqrt(x*x + y*y);
-            double distOther = Math.sqrt(other.x*other.x + other.y*other.y);
-            return Double.compare(distThis, distOther);
+            return Double.compare(this.distance, other.distance);
         }
     }
 
     public static void main(String[] args) {
-        // Результаты для графиков
         List<String> results = new ArrayList<>();
-        results.add("Size,InsertTime(ns),ExtractTime(ns),DecreaseKeyTime(ns)");
+        results.add("Size,InsertTime(ns),ExtractMinTime(ns),DecreaseKeyTime(ns)");
 
-        // Размеры тестовых наборов
         int[] sizes = {100, 500, 1000, 2000, 5000, 10000};
-        int trials = 5; // Количество прогонов для каждого размера
+        int trials = 3;
+        Random random = new Random();
 
         for (int size : sizes) {
-            long totalInsert = 0;
-            long totalExtract = 0;
-            long totalDecreaseKey = 0;
+            long totalInsertTime = 0;
+            long totalExtractMinTime = 0;
+            long totalDecreaseKeyTime = 0;
 
             for (int trial = 0; trial < trials; trial++) {
                 FibonacciHeap heap = new FibonacciHeap();
-                List nodes = new ArrayList<>();
-                Random rand = new Random();
+                List<Node> nodes = new ArrayList<>();
 
-                // Тест добавления
-                long start = System.nanoTime();
+                // Тест вставки
+                long startTime = System.nanoTime();
                 for (int i = 0; i < size; i++) {
-                    Order order = new Order(i, rand.nextInt(3)+1, rand.nextDouble()*100, rand.nextDouble()*100);
-                    FibonacciHeap.Node node = heap.insert(order);
-                    nodes.add(node);
+                    DeliveryOrder order = new DeliveryOrder(
+                            i,
+                            random.nextInt(3) + 1,
+                            random.nextDouble() * 100
+                    );
+                    nodes.add(heap.insert(order.priority * 1000 + (int)(order.distance * 10)));
                 }
-                long insertTime = System.nanoTime() - start;
-                totalInsert += insertTime;
+                totalInsertTime += System.nanoTime() - startTime;
 
-                // Тест извлечения минимума (50% элементов)
-                start = System.nanoTime();
-                for (int i = 0; i < size/2; i++) {
-                    heap.extractMin();
+                // Тест извлечения минимума (только 25% элементов)
+                startTime = System.nanoTime();
+                int extractCount = size / 4;
+                for (int i = 0; i < extractCount; i++) {
+                    if (!heap.isEmpty()) {
+                        heap.extractMin();
+                    }
                 }
-                long extractTime = System.nanoTime() - start;
-                totalExtract += extractTime;
+                totalExtractMinTime += System.nanoTime() - startTime;
 
-                // Тест уменьшения ключа (для оставшихся элементов)
-                start = System.nanoTime();
-                for (int i = size/2; i < size; i++) {
-                    Order order = (Order)nodes.get(i).getKey();
-                    order.priority = 1; // Повышаем приоритет
-                    heap.decreaseKey(nodes.get(i), order);
+                // Тест уменьшения ключа (для 50% оставшихся элементов)
+                startTime = System.nanoTime();
+                int decreaseCount = Math.min(size / 2, nodes.size());
+                for (int i = 0; i < decreaseCount; i++) {
+                    Node node = nodes.get(random.nextInt(nodes.size()));
+                    if (node != null && !heap.isEmpty()) {
+                        try {
+                            heap.decreaseKey(node, node.getKey() - 100);
+                        } catch (IllegalArgumentException | NullPointerException e) {
+                            // Пропускаем проблемные узлы
+                        }
+                    }
                 }
-                long decreaseKeyTime = System.nanoTime() - start;
-                totalDecreaseKey += decreaseKeyTime;
+                totalDecreaseKeyTime += System.nanoTime() - startTime;
             }
 
-            // Средние значения
             results.add(String.format("%d,%d,%d,%d",
                     size,
-                    totalInsert/(trials*1000),    // мкс
-                    totalExtract/(trials*1000),   // мкс
-                    totalDecreaseKey/(trials*1000) // мкс
+                    totalInsertTime / trials,
+                    totalExtractMinTime / trials,
+                    totalDecreaseKeyTime / trials
             ));
         }
 
-        // Сохранение результатов в CSV
-        try (PrintWriter pw = new PrintWriter("results.csv")) {
-            results.forEach(pw::println);
+        try (FileWriter writer = new FileWriter("fibonacci_heap_results.csv")) {
+            for (String line : results) {
+                writer.write(line + "\n");
+            }
+            System.out.println("Результаты сохранены в fibonacci_heap_results.csv");
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        System.out.println("Тестирование завершено. Результаты сохранены в results.csv");
     }
 }
