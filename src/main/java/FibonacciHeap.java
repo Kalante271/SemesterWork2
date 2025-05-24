@@ -28,7 +28,7 @@ public class FibonacciHeap {
 
     public Node insert(Integer key) {
         Node newNode = new Node(key);
-        mergeLists(min, newNode);
+        min = mergeLists(min, newNode);
         size++;
         return newNode;
     }
@@ -81,7 +81,33 @@ public class FibonacciHeap {
     }
 
     public Integer extractMin() {
+        Node extractedMin = min;
+        if(extractedMin != null) {
+            if(extractedMin.getChild() != null) {
+                List<Node> children = new ArrayList<>();
+                Node child = extractedMin.getChild();
+                do {
+                    children.add(child);
+                    child.getRight();
+                } while (child != extractedMin.getChild());
 
+                for (Node c : children) {
+                    c.setParent(null);
+                    min = mergeLists(min, c);
+                }
+            }
+
+            extractedMin.getLeft().setRight(extractedMin.getRight());
+            extractedMin.getRight().setLeft(extractedMin.getLeft());
+            if(extractedMin.getRight() == extractedMin) {
+                min = null;
+            } else {
+                min = extractedMin.getRight();
+                consolidate();
+            }
+            size--;
+        }
+        return extractedMin != null ? extractedMin.getKey() : null;
     }
 
     public void decreaseKey(Node node, Integer newKey) {
