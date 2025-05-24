@@ -40,7 +40,7 @@ public class FibonacciHeap {
         heap2.clear();
     }
 
-    public void consolidate() {
+    private void consolidate() {
         int arraySize = ((int) Math.floor(Math.log(size) / Math.log(2))) + 1;
         List<Node> degreeList = new ArrayList<>(Collections.nCopies(arraySize, null));
 
