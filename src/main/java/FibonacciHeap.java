@@ -80,6 +80,22 @@ public class FibonacciHeap {
         }
     }
 
+    public Integer extractMin() {
+
+    }
+
+    public void decreaseKey() {
+
+    }
+
+    public void cut() {
+
+    }
+
+    public void cascadingCut() {
+
+    }
+
     private void link(Node child, Node parent) {
         child.getLeft().setRight(child.getRight());
         child.getRight().setLeft(child.getLeft());
