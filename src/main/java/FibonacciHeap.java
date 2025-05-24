@@ -84,16 +84,61 @@ public class FibonacciHeap {
 
     }
 
-    public void decreaseKey() {
+    public void decreaseKey(Node node, Integer newKey) {
+        if (newKey.compareTo(node.getKey()) > 0) {
+            throw new IllegalArgumentException("New key must be smaller than current key!");
+        }
 
+        node.setKey(newKey);
+        Node parent = node.getParent();
+
+        // Если свойство кучи нарушено
+        if (parent != null && node.getKey().compareTo(parent.getKey()) < 0) {
+            cut(node, parent);
+            cascadingCut(parent);
+        }
+
+        // Обновляем минимум
+        if (node.getKey().compareTo(min.getKey()) < 0) {
+            min = node;
+        }
     }
 
-    public void cut() {
+    private void cut(Node node, Node parent) {
+        // Удаляем из списка детей родителя
+        if (node.getLeft() == node) {
+            parent.setChild(null);
+        } else {
+            node.getLeft().setRight(node.getRight());
+            node.getRight().setLeft(node.getLeft());
+            if (parent.getChild() == node) {
+                parent.setChild(node.getLeft());
+            }
+        }
 
+        parent.setDegree(parent.getDegree() - 1);
+
+        // Добавляем в корневой список
+        node.setLeft(min);
+        node.setRight(min.getRight());
+        min.getRight().setLeft(node);
+        min.setRight(node);
+
+        node.setParent(null);
+        node.setMark(false);
     }
 
-    public void cascadingCut() {
 
+    public void cascadingCut(Node node) {
+        Node parent = node.getParent();
+        if (parent != null) {
+            if (!node.isMark()) {
+                node.setMark(true);
+            } else {
+                cut(node, parent);
+                cascadingCut(parent);
+            }
+        }
     }
 
     private void link(Node child, Node parent) {
